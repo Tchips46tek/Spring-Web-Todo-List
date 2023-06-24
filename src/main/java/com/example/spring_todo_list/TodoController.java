@@ -17,62 +17,78 @@ public class TodoController {
     @Autowired
     private TodoRepository repository;
 
+    private Date checkReqField(StringBuilder errorMessage,
+                               @RequestParam("title") String title,
+                               @RequestParam("description") String description,
+                               @RequestParam("dueTime") String dueTimeStr) {
+        if (title == null || description == null || dueTimeStr == null ||
+                title.length() == 0 || description.length() == 0 || dueTimeStr.length() == 0) {
+            errorMessage.append("A field is empty\n");
+            return null;
+        }
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+        Date dueTime;
+        try {
+            dueTime = format.parse(dueTimeStr);
+        } catch (ParseException e) {
+            errorMessage.append("Can't parse date\n");
+            return null;
+        }
+        return dueTime;
+    }
+
     @GetMapping("/")
-    public String index(Model model) {
+    public String index(Model model,
+                        StringBuilder errorMessage) {
         Iterable<Todo> todoList = repository.findAll();
         model.addAttribute("todoList", new TodoViewModel(todoList));
         model.addAttribute("newTodo", new Todo());
+        if (errorMessage != null && !errorMessage.isEmpty())
+            model.addAttribute("errorMessage", errorMessage.toString());
         return "index";
     }
 
     @PostMapping("/")
-    public String addTodo(@RequestParam("title") String title,
+    public String addTodo(Model model,
+                          @RequestParam("title") String title,
                           @RequestParam("description") String description,
                           @RequestParam("dueTime") String dueTimeStr) {
-        if (title == null || description == null || dueTimeStr == null ||
-        title.length() == 0 || description.length() == 0 || dueTimeStr.length() == 0)
-            return "redirect:/";
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-        Date dueTime = null;
-        try {
-            dueTime = format.parse(dueTimeStr);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        StringBuilder errorMessage = new StringBuilder();
+        Date dueTime = checkReqField(errorMessage, title, description, dueTimeStr);
+        if (dueTime == null)
+            return index(model, errorMessage);
         repository.save(new Todo(title, description, dueTime));
         return "redirect:/";
     }
 
     @GetMapping("/edit/{id}")
-    public String getTodo(Model model, @PathVariable Long id) {
+    public String getTodo(Model model,
+                          StringBuilder errorMessage,
+                          @PathVariable Long id) {
         try {
             Todo todo = repository.findById(id).orElseThrow(NoSuchElementException::new);
             model.addAttribute("todoId", id);
             model.addAttribute("todoTitle", todo.getTitle());
             model.addAttribute("todoDescription", todo.getDescription());
             model.addAttribute("todoDueTime", todo.getDueTime());
+            if (errorMessage != null && !errorMessage.isEmpty())
+                model.addAttribute("errorMessage", errorMessage.toString());
             return "edit";
         } catch (NoSuchElementException e) {
-            return "error"; // Redirige vers la page d'erreur personnalisée
+            return index(model, new StringBuilder("Todo don't exist\n"));
         }
     }
 
     @PostMapping("/edit/{id}")
-    public String updateTodo(@RequestParam("title") String title,
+    public String updateTodo(Model model,
+                             @RequestParam("title") String title,
                              @RequestParam("description") String description,
                              @RequestParam("dueTime") String dueTimeStr,
                              @PathVariable Long id) {
-        if (title == null || description == null || dueTimeStr == null ||
-                title.length() == 0 || description.length() == 0 || dueTimeStr.length() == 0)
-            return "redirect:/edit/" + id;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-        Date dueTime = new Date();
-        try {
-            dueTime = format.parse(dueTimeStr);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
+        StringBuilder errorMessage = new StringBuilder();
+        Date dueTime = checkReqField(errorMessage, title, description, dueTimeStr);
+        if (dueTime == null)
+            return getTodo(model, errorMessage, id);
         Optional<Todo> todoOptional = repository.findById(id);
         if (todoOptional.isPresent()) {
             Todo existingTodo = todoOptional.get();

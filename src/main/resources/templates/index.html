@@ -65,6 +65,9 @@
             </div>
             <button type="submit" class="btn btn-primary">Add Todo</button>
         </form>
+        <div th:if="${errorMessage}" class="error-message">
+            <p th:text="${errorMessage}" style="color: red;"></p>
+        </div>
     </div>
 </section>
 
