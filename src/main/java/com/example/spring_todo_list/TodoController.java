@@ -9,7 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
-
+import java.util.NoSuchElementException;
 
 @Controller
 public class TodoController {
@@ -29,6 +29,9 @@ public class TodoController {
     public String addTodo(@RequestParam("title") String title,
                           @RequestParam("description") String description,
                           @RequestParam("dueTime") String dueTimeStr) {
+        if (title == null || description == null || dueTimeStr == null ||
+        title.length() == 0 || description.length() == 0 || dueTimeStr.length() == 0)
+            return "redirect:/";
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         Date dueTime = null;
         try {
@@ -42,12 +45,16 @@ public class TodoController {
 
     @GetMapping("/edit/{id}")
     public String getTodo(Model model, @PathVariable Long id) {
-        Todo todo = repository.findById(id).orElseThrow();
-        model.addAttribute("todoId", id);
-        model.addAttribute("todoTitle", todo.getTitle());
-        model.addAttribute("todoDescription", todo.getDescription());
-        model.addAttribute("todoDueTime", todo.getDueTime());
-        return "edit";
+        try {
+            Todo todo = repository.findById(id).orElseThrow(NoSuchElementException::new);
+            model.addAttribute("todoId", id);
+            model.addAttribute("todoTitle", todo.getTitle());
+            model.addAttribute("todoDescription", todo.getDescription());
+            model.addAttribute("todoDueTime", todo.getDueTime());
+            return "edit";
+        } catch (NoSuchElementException e) {
+            return "error"; // Redirige vers la page d'erreur personnalisée
+        }
     }
 
     @PostMapping("/edit/{id}")
@@ -55,6 +62,9 @@ public class TodoController {
                              @RequestParam("description") String description,
                              @RequestParam("dueTime") String dueTimeStr,
                              @PathVariable Long id) {
+        if (title == null || description == null || dueTimeStr == null ||
+                title.length() == 0 || description.length() == 0 || dueTimeStr.length() == 0)
+            return "redirect:/edit/" + id;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
         Date dueTime = new Date();
         try {
@@ -69,7 +79,6 @@ public class TodoController {
             existingTodo.setTitle(title);
             existingTodo.setDescription(description);
             existingTodo.setDueTime(dueTime);
-            System.out.println("here" + todoOptional.get().getId() + "op ex" +  existingTodo.getId());
             repository.saveAndFlush(existingTodo);
         }
         return "redirect:/edit/" + id;

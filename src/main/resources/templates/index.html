@@ -13,10 +13,10 @@
         <table class="table table-bordered table-striped" id="todoItems" th:object="${todoList}">
             <thead>
             <tr>
-                <th>Edition</th>
                 <th>Title</th>
                 <th>Description</th>
                 <th>Due Time</th>
+                <th>Edition</th>
                 <th>Deletion</th>
             </tr>
             </thead>
@@ -40,7 +40,7 @@
             </tbody>
         </table>
     </div>
-
+    <div style="padding-top:50px"></div>
     <div class="todoForm">
         <form class="form-horizontal" role="form" th:action="@{/}" method="POST">
             <div class="form-group">
@@ -53,7 +53,7 @@
                 <label for="inputTodoDescription" class="col-sm-2">Todo Description</label>
                 <div class="col-sm-10">
                     <input type="text" name="description" class="form-control" id="inputTodoDescription"
-                           placeholder="Enter category" />
+                           placeholder="Enter Description" />
                 </div>
             </div>
             <div class="form-group">
