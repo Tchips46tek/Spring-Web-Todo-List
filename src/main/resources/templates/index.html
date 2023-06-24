@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+
+<head th:replace="base :: head(~{::title})">
+    <title>Todo List Spring</title>
+</head>
+
+<body th:replace="base :: body(~{::h1}, ~{::section})">
+<h1>Todo List</h1>
+
+<section>
+    <div class="todo">
+        <table class="table table-bordered table-striped" id="todoItems" th:object="${todoList}">
+            <thead>
+            <tr>
+                <th>Edition</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Due Time</th>
+                <th>Deletion</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item,i :*{todo}">
+                <td th:text="${item.title}">Todo Title</td>
+                <td th:text="${item.description}">Todo Description</td>
+                <td th:text="${item.dueTime}">Todo Description</td>
+                <td>
+                    <form th:action="@{'/edit/' + ${item.id}}" method="get">
+                        <button type="submit">Edit</button>
+                    </form>
+                </td>
+                <td>
+                    <form th:action="@{'/edit/' + ${item.id}}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="todoForm">
+        <form class="form-horizontal" role="form" th:action="@{/}" method="POST">
+            <div class="form-group">
+                <label for="inputTodoTitle" class="col-sm-2">Todo Name</label>
+                <div class="col-sm-10">
+                    <input type="text" name="title" class="form-control" id="inputTodoTitle" placeholder="Enter Title" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputTodoDescription" class="col-sm-2">Todo Description</label>
+                <div class="col-sm-10">
+                    <input type="text" name="description" class="form-control" id="inputTodoDescription"
+                           placeholder="Enter category" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputTodoDueTime" class="col-sm-2">Todo Due Time</label>
+                <div class="col-sm-10">
+                    <input type="datetime-local" name="dueTime" class="form-control" id="inputTodoDueTime"
+                           placeholder="Select Due Time" />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Todo</button>
+        </form>
+    </div>
+</section>
+
+</body>
+
+</html>
