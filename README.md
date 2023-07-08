@@ -27,7 +27,9 @@ spring.datasource.password=your_password
 Replace `your_password` with the password for your MySQL database.
 
 4. Build the application using Maven. Open a terminal or command prompt, navigate to the project's root directory, and run the following command:
-
+```
+mvn clean install
+```
 5. Run the application:
 ```
 mvn spring-boot:run
